@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tierra Matera - Tienda de Mate y Bombillas</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7;}
+        header { background: #388e3c; color: white; padding: 1em; text-align: center;}
+        .container { width: 90%; max-width: 900px; margin: 2em auto;}
+        .productos { display: flex; flex-wrap: wrap; gap: 2em; }
+        .producto { background: white; padding: 1em; border-radius: 8px; box-shadow: 0 2px 4px #ccc; width: 220px;}
+        .producto img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px;}
+        .producto h3 { margin: 0.5em 0 0.2em;}
+        .producto p { margin: 0.2em 0;}
+        .producto button { background: #388e3c; color: white; border: none; padding: 0.5em 1em; border-radius: 4px; cursor: pointer;}
+        #carrito { background: white; padding: 1em; border-radius: 8px; box-shadow: 0 2px 4px #ccc; margin-top: 2em;}
+        #carrito h2 { margin-top: 0;}
+        #carrito ul { list-style: none; padding: 0;}
+        #carrito li { margin-bottom: 0.5em;}
+        #pagar { background: #d32f2f; color: white; border: none; padding: 0.7em 2em; border-radius: 4px; cursor: pointer;}
+        #formularioCompra { display: none; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 4px #ccc; margin-top: 2em;}
+        #formularioCompra label { display: block; margin: 0.5em 0 0.2em;}
+        #formularioCompra input { width: 100%; padding: 0.5em; margin-bottom: 1em; border-radius: 4px; border: 1px solid #ccc;}
+        #formularioCompra button { background: #388e3c; color: white; border: none; padding: 0.5em 1em; border-radius: 4px; cursor: pointer;}
+        .social { margin-top: 0.5em; }
+        .social a { color: #fff; font-weight: bold; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tierra Matera</h1>
+        <p>¡Bienvenido! Todo para tu experiencia matera.</p>
+        <div class="social">
+            <span>Síguenos en Instagram: <a href="https://instagram.com/tierramatera.lp" target="_blank">@tierramatera.lp</a></span>
+        </div>
+    </header>
+    <div class="container">
+        <section class="productos" id="productos"></section>
+        <section id="carrito">
+            <h2>Carrito de compras</h2>
+            <ul id="carrito-lista"></ul>
+            <p><strong>Total:</strong> $<span id="total">0</span></p>
+            <button id="pagar">Pagar</button>
+        </section>
+        <form id="formularioCompra">
+            <h2>Datos de contacto</h2>
+            <label for="correo">Correo electrónico:</label>
+            <input type="email" id="correo" name="correo" required>
+            <label for="telefono">Número de teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" required pattern="^[\d\+\s]+$">
+            <button type="submit">Finalizar compra</button>
+        </form>
+    </div>
+    <script>
+        // Número de WhatsApp destino (tu número, con código de país)
+        const numeroWhatsApp = "5492215400783";
+
+        // Productos de ejemplo
+        const productos = [
+            {
+                id: 1,
+                nombre: "Mate de calabaza",
+                descripcion: "Tradicional mate de calabaza con virola de aluminio.",
+                precio: 1200,
+                imagen: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+                id: 2,
+                nombre: "Bombilla acero inoxidable",
+                descripcion: "Bombilla resistente, fácil de limpiar.",
+                precio: 800,
+                imagen: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+                id: 3,
+                nombre: "Mate de madera",
+                descripcion: "Mate de madera con diseño artesanal.",
+                precio: 1500,
+                imagen: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+                id: 4,
+                nombre: "Set matero",
+                descripcion: "Incluye mate, bombilla y bolsa matera.",
+                precio: 3500,
+                imagen: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
+            }
+        ];
+
+        // Renderizar productos
+        const contenedorProductos = document.getElementById('productos');
+        productos.forEach(prod => {
+            const div = document.createElement('div');
+            div.className = 'producto';
+            div.innerHTML = `
+                <img src="${prod.imagen}" alt="${prod.nombre}">
+                <h3>${prod.nombre}</h3>
+                <p>${prod.descripcion}</p>
+                <p><strong>$${prod.precio}</strong></p>
+                <button onclick="agregarAlCarrito(${prod.id})">Agregar al carrito</button>
+            `;
+            contenedorProductos.appendChild(div);
+        });
+
+        // Carrito
+        let carrito = [];
+        function agregarAlCarrito(id) {
+            const producto = productos.find(p => p.id === id);
+            carrito.push(producto);
+            renderizarCarrito();
+        }
+
+        function renderizarCarrito() {
+            const lista = document.getElementById('carrito-lista');
+            lista.innerHTML = '';
+            carrito.forEach((item, idx) => {
+                const li = document.createElement('li');
+                li.textContent = `${item.nombre} - $${item.precio}`;
+                li.innerHTML += ` <button onclick="eliminarDelCarrito(${idx})">Eliminar</button>`;
+                lista.appendChild(li);
+            });
+            const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+            document.getElementById('total').textContent = total;
+        }
+
+        function eliminarDelCarrito(idx) {
+            carrito.splice(idx, 1);
+            renderizarCarrito();
+        }
+
+        // Pago: mostrar formulario de contacto antes de finalizar
+        document.getElementById('pagar').addEventListener('click', () => {
+            if (carrito.length === 0) {
+                alert("El carrito está vacío. Agrega productos antes de pagar.");
+                return;
+            }
+            document.getElementById('formularioCompra').style.display = 'block';
+            window.scrollTo({ top: document.getElementById('formularioCompra').offsetTop, behavior: 'smooth' });
+        });
+
+        // Enviar datos por WhatsApp al finalizar compra
+        document.getElementById('formularioCompra').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const correo = document.getElementById('correo').value;
+            const telefono = document.getElementById('telefono').value;
+            const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+
+            let mensaje = `¡Nueva compra en Tierra Matera!%0A`;
+            mensaje += `Cliente: ${correo}%0A`;
+            mensaje += `Teléfono: ${telefono}%0A`;
+            mensaje += `Productos:%0A`;
+            carrito.forEach(item => {
+                mensaje += `- ${item.nombre} ($${item.precio})%0A`;
+            });
+            mensaje += `Total: $${total}%0A`;
+            mensaje += `Instagram: @tierramatera.lp`;
+
+            // Abrir WhatsApp Web con mensaje prellenado
+            window.open(`https://wa.me/${numeroWhatsApp}/?text=${mensaje}`, '_blank');
+
+            alert("¡Gracias por tu compra! Serás redirigido a WhatsApp para confirmar el pedido.");
+            carrito = [];
+            renderizarCarrito();
+            document.getElementById('formularioCompra').reset();
+            document.getElementById('formularioCompra').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
